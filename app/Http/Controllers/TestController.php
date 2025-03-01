@@ -13,10 +13,14 @@ class TestController extends Controller
 {
     public function teste(Request $request, $search){
 
-        if((int) $search > 0){
-            $user=User::find($search);
-        }else{
-            $user=User::where('name',$search)->first();
+        
+        $user=User::where('id',$search)->get();
+        if(!$user->isNotEmpty()){
+            $user=User::where('name',$search)->get();
+        }
+
+        if(!$user->isNotEmpty()){
+            $user=User::where('email',$search)->get();
         }
 
         return response($user,200);
@@ -47,7 +51,9 @@ class TestController extends Controller
 
     public function GetUsers(){
 
-        $users=User::whereNotnull('id');
+        $users=User::whereNotnull('id')->paginate(20);
+
+        return response($users,200);
 
     }
 

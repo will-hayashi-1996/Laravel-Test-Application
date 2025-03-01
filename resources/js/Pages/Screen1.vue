@@ -22,23 +22,39 @@
       },
     });
   }
-  
-  const searchId = reactive({data: null});
 
-  const searchUser = reactive({data: null});
+  const searchTerm = reactive({data: null});
+
+  const ResultUsersApi = reactive({data: null});
 
   function search() {
-    axios.get(route('test.get',{search:searchId.data}))
+    axios.get(route('test.get',{search:searchTerm.data}))
       .then(response => {
-        searchUser.data = response.data
+        console.log(response.data)
+        ResultUsersApi.data = response.data
       })
       .catch(error => {
         console.error('Error:', error);
       });
   }
 
+  let timeout = null
+
+  const handleKeyup = () => {
+    clearTimeout(timeout) // Clear previous timeout
+    timeout = setTimeout(() => {
+      search()
+    }, 300) // 300ms delay
+}
+
   onMounted(()=>{
-    
+    axios.get(route('users.get'))
+      .then(response => {
+        ResultUsersApi.data=response.data.data
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
   })
 
   </script>
@@ -69,32 +85,42 @@
       <div class="max-w-md mx-auto">
 
           <div class="flex">
-            <label for="email" class="block text-sm font-medium text-gray-700 mx-2 my-3">Search:</label>
+            <label for="search" class="block text-sm font-medium text-gray-700 mx-2 my-3">Search:</label>
             <input 
-              type="email" 
-              id="email" 
-              v-model="form.email"
+              type="text" 
+              id="search" 
+              @keyup="handleKeyup" 
+              v-model="searchTerm.data"
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             />
-            <p v-if="form.errors.email" class="mt-2 text-sm text-red-600">{{ form.errors.email }}</p>
+            
           </div>
 
       </div>
 
       <hr class="my-2">
 
-      <table>
-        <thead>
+      <table class="min-w-full border border-gray-300 shadow-md rounded-lg">
+        <thead class="bg-gray-100 text-gray-700">
           <tr>
-            <td>ID</td>
-            <td>Name</td>
-            <td>E-mail</td>
+            <th class="px-4 py-2 border border-gray-300 text-left">ID</th>
+            <th class="px-4 py-2 border border-gray-300 text-left">Name</th>
+            <th class="px-4 py-2 border border-gray-300 text-left">E-mail</th>
           </tr>
         </thead>
         <tbody>
-          
+          <tr 
+            v-for="user in ResultUsersApi.data" 
+            :key="user?.id" 
+            class="border border-gray-300 odd:bg-white even:bg-gray-50 hover:bg-gray-200 transition-colors"
+          >
+            <td class="px-4 py-2 border">{{ user?.id }}</td>
+            <td class="px-4 py-2 border">{{ user?.name }}</td>
+            <td class="px-4 py-2 border">{{ user?.email }}</td>
+          </tr>
         </tbody>
       </table>
+
 
     </div>
 
