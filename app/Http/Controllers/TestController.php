@@ -62,7 +62,7 @@ class TestController extends Controller
         $response = Http::withHeaders([
             'Authorization' => 'Bearer YOUR_ACCESS_TOKEN',
             'Accept' => 'application/json',
-        ])->get("https://api.unsplash.com/search/photos/?client_id=nhwi-s1j4SYDaxaOLGq_sca9KIVcSwLqoYcPi4q9otI&query=" . urlencode($search));
+        ])->get("https://api.unsplash.com/search/photos/?client_id=".config('app.api_key')."&query=" . urlencode($search));
         
 
         return response($response->json()['results'],200);
