@@ -3,47 +3,36 @@
   import axios from 'axios';
   import { route } from 'ziggy-js';
   import { useForm } from '@inertiajs/vue3';
-  
+    
+  const ResultApi = reactive({data: null});
 
-  const form = useForm({
-    name: '',
-    email: '',
-  });
-  
-  // Function to handle form submission
-  function submit() {
-    form.post(route('test.post'), {
-      onSuccess: () => {
-        alert('Form submitted successfully!');
-        form.reset(); // Reset the form after successful submission
-      },
-      onError: (errors) => {
-        console.error('Form errors:', errors);
-      },
-    });
-  }
-  
-  const searchId = reactive({data: null});
-
-  const searchUser = reactive({data: null});
-
-  function search() {
-    axios.get(route('test.get',{search:searchId.data}))
+  function toggleColor(row,col) {
+    console.log('yesye')
+    axios.post(route('set.api.color',{array:ResultApi.data,row:row,col:col}))
       .then(response => {
-        searchUser.data = response.data
+        ResultApi.data=response.data
       })
       .catch(error => {
         console.error('Error:', error);
       });
   }
 
- 
+  onMounted(()=>{
+    axios.get(route('get.api.color'))
+      .then(response => {
+        console.log(response.data)
+        ResultApi.data=response.data
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+  })
 
-  </script>
+</script>
 
 <template>
   <div class="flex min-h-screen">
-  
+    <!-- Sidebar -->
     <div class="w-64 bg-gray-800 text-white fixed h-full">
       <div class="p-4">
         <h2 class="text-lg font-semibold">Sidebar</h2>
@@ -61,15 +50,25 @@
       </div>
     </div>
 
-    
+
     <div class="flex-1 ml-64 p-6">
-
-      <div class="max-w-md mx-auto">
-
-        This is Screen 3
-
+      <div class="max-w-2xl mx-auto">
+        <!-- 3x3 Grid -->
+        <div class="grid grid-cols-3 gap-2 w-[600px] h-[600px]">
+          <!-- Outer loop for rows -->
+          <div v-for="(row, rowIndex) in ResultApi.data" :key="rowIndex">
+            <!-- Inner loop for columns -->
+            <div
+              v-for="(col, colIndex) in row"
+              :key="`${rowIndex}-${colIndex}`"
+              @click="toggleColor(rowIndex, colIndex)"
+              class="w-48 h-48 border border-white"
+              :class="{ 'bg-blue-500': col === true, 'bg-red-500': col === false }"
+            ></div>
+          </div>
+        </div>
       </div>
-    </div>
+  </div>
 
   </div>
 </template>

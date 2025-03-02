@@ -5,39 +5,47 @@
   import { useForm } from '@inertiajs/vue3';
   
 
-  const form = useForm({
-    name: '',
-    email: '',
-  });
-  
-  // Function to handle form submission
-  function submit() {
-    form.post(route('test.post'), {
-      onSuccess: () => {
-        alert('Form submitted successfully!');
-        form.reset(); // Reset the form after successful submission
-      },
-      onError: (errors) => {
-        console.error('Form errors:', errors);
-      },
-    });
-  }
-  
-  const searchId = reactive({data: null});
-
-  const searchUser = reactive({data: null});
-
   function search() {
-    axios.get(route('test.get',{search:searchId.data}))
+    axios.get(route('get.api.data',{search:searchTerm.data}))
       .then(response => {
-        searchUser.data = response.data
+        console.log(response.data)
+        ResultUsersApi.data = response.data
       })
       .catch(error => {
         console.error('Error:', error);
       });
   }
 
- 
+  let timeout = null
+  
+  const handleKeyup = (event) => {
+  if (event.key === 'Enter') {
+    clearTimeout(timeout); // Clear any previous timeouts
+    timeout = setTimeout(() => {
+      search();
+    }, 300); // 300ms delay
+  }
+};
+
+  const searchTerm = reactive({data: null});
+
+  const ResultUsersApi = reactive({data: null});
+
+  const currentIndex = ref(0);
+
+    const nextImage = () => {
+      if (currentIndex.value < ResultUsersApi.data.length - 1) {
+        currentIndex.value++;
+      }
+    };
+
+    const prevImage = () => {
+      if (currentIndex.value > 0) {
+        currentIndex.value--;
+      }
+    };
+
+
 
   </script>
 
@@ -66,9 +74,41 @@
 
       <div class="max-w-md mx-auto">
 
-        This is Screen 2
+        <div class="flex">
+          <label for="search" class="block text-sm font-medium text-gray-700 mx-2 my-3">Search:</label>
+          <input 
+            type="text" 
+            id="search" 
+            @keyup="handleKeyup" 
+            v-model="searchTerm.data"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          />
+          
+        </div>
 
       </div>
+
+      <hr class="my-2">
+
+      <div v-if="ResultUsersApi.data" class="flex justify-center items-center">
+    
+        <button @click="prevImage()" class="p-2 bg-gray-200 rounded-full">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+
+      
+        <img :src="ResultUsersApi.data[currentIndex].urls.regular" class="mx-4" />
+
+      
+        <button @click="nextImage()" class="p-2 bg-gray-200 rounded-full">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
+
     </div>
 
   </div>
